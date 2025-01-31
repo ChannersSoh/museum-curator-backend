@@ -11,9 +11,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment files
-.env
+.env*
 
-# IDEs and text editors (you can customize this for your editor)
+# IDEs and text editors 
 .vscode/
 .idea/
 
