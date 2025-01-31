@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getArtworks } from "../controllers/artworkController";
+import { getExhibits } from "../controllers/exhibitController";
 
 const router = Router();
 
@@ -8,6 +8,6 @@ router.get("/", (req, res) => {
 });
 
 
-router.get("/artworks", getArtworks);
+router.get("/exhibits", getExhibits);
 
 export default router;
