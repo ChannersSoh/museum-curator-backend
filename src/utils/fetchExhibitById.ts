@@ -18,20 +18,17 @@ export const fetchExhibitById = async (id: string) => {
       }
     
       return response.data.records[0]; 
-    }
-    
-    else if (institution === "smithsonian") {
+    } else if (institution === "smithsonian") {
       const apiKey = process.env.SMITHSONIAN_API_KEY;
       const response = await axios.get(`https://api.si.edu/openaccess/api/v1.0/content/${actualId}`, {
         params: { api_key: apiKey },
       });
       return response.data;
-    } 
-    else {
+    } else {
       throw new Error("Invalid institution prefix.");
     }
   } catch (error) {
     console.error(`Error fetching exhibit ${id}:`, error);
-    throw new Error("Failed to fetch exhibit details.");
+    throw error;
   }
 };
