@@ -7,7 +7,7 @@ export function startServer(port: number = Number(PORT)): Server {
   const server = createServer(app);
 
   server.listen(port, () => {
-    console.log(`✅ Server is running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
   });
 
   return server;
