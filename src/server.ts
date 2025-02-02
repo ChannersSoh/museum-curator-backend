@@ -1,20 +1,18 @@
 import app from "./app";
 import { createServer, Server } from "http";
 
-const PORT = process.env.PORT || "10000"; 
+const PORT = process.env.PORT || 5000;
 
-function startServer(port: number = parseInt(PORT, 10)): Server {
+function startServer(port: number = Number(PORT)): Server {
   const server = createServer(app);
 
   server.listen(port, () => {
-    console.log(`Server is running on PORT: ${port}`);
-  });
-
-  server.on("error", (err) => {
-    console.error("Server Error:", err);
+    console.log(`Server is running on port ${port}`);
   });
 
   return server;
 }
+
+export default startServer; 
 
 startServer();
