@@ -1,9 +1,13 @@
 import app from "./app";
-import { Server } from "http";
+import { createServer, Server } from "http";
 
-export function startServer(port: number = parseInt(process.env.PORT || "5000", 10)): Server {
-  const server = app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+const PORT = process.env.PORT || 5000;
+
+export function startServer(port: number = Number(PORT)): Server {
+  const server = createServer(app);
+
+  server.listen(port, () => {
+    console.log(`✅ Server is running on port ${port}`);
   });
 
   return server;
