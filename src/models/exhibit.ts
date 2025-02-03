@@ -9,10 +9,8 @@ export interface Exhibit {
   institution: string;
   collection: string;
   countryOfOrigin: string;
-  type: "painting" | "sculpture" | "photograph" | "drawing" | "manuscript" | "other";
   medium: string;
   styleOrPeriod: string;
-  subjectMatter: string[];
   locationCreated: string;
   historicalEra: string;
 }

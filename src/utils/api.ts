@@ -34,7 +34,6 @@ export const getHarvardObjects = async (
       countryOfOrigin: item.culture || "Unknown",
       medium: item.medium || "Unknown",
       styleOrPeriod: item.period || "Unknown",
-      subjectMatter: item.subjects?.map((s: any) => s.name) || [],
       locationCreated: item.place || "Unknown",
       historicalEra: determineHistoricalEra(item.dated),
     }));
@@ -84,7 +83,6 @@ export const getSmithsonianData = async (
       countryOfOrigin: item.content?.indexedStructured?.geoLocation?.[0] || "Unknown",
       medium: item.content?.indexedStructured?.material?.[0] || "Unknown",
       styleOrPeriod: item.content?.freetext?.style?.[0]?.content || "Unknown",
-      subjectMatter: item.content?.freetext?.topic?.map((t: any) => t.content) || [],
       locationCreated: item.content?.freetext?.place?.[0]?.content || "Unknown",
       historicalEra: determineHistoricalEra(item.content?.freetext?.date?.[0]?.content),
     }));
