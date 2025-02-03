@@ -9,7 +9,6 @@ const envFile =
     : ".env";
 
 dotenv.config({ path: envFile });
-console.log("Loaded env file:", envFile);
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL not set");
