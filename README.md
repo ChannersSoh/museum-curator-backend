@@ -4,7 +4,8 @@ This is the backend for the Museum Curator project, providing API endpoints to f
 
 Frontend Repository: Museum Curator Frontend
 Live API Base URL: https://museum-curator-backend.onrender.com
-Features
+
+**Features**
 
 Fetches exhibit data from Harvard Art Museums & Smithsonian APIs
 Provides endpoints for exhibit search & pagination
@@ -60,7 +61,7 @@ For a production build, use:
   npm run build
   npm start
 
-API Endpoints
+**API Endpoints**
 Method	Endpoint	Description
 GET	/api/exhibits	Fetch paginated exhibit list
 GET	/api/exhibits/:id	Fetch exhibit details by ID
@@ -71,7 +72,7 @@ POST	/collections/save	Save an exhibit to a collection
 
 Full API documentation will be added soon
 
-Running Tests
+**Running Tests**
 
 Jest is used for testing.
 
