@@ -27,39 +27,39 @@ Ensure you have the following installed:
 
 Clone the repository
 
-  git clone https://github.com/ChannersSoh/museum-curator-backend.git
-  cd museum-curator-backend
+    git clone https://github.com/ChannersSoh/museum-curator-backend.git
+    cd museum-curator-backend
 
 Install dependencies
 
-  npm install
+    npm install
 
 Create a .env file in the project root and add the following (modify with your actual credentials):
 
-  PORT=5000
-  DATABASE_URL=your_postgresql_connection_string
-  JWT_SECRET=your_secret_key
-  HARVARD_API_KEY=your_harvard_api_key
-  SMITHSONIAN_API_KEY=your_smithsonian_api_key
+    PORT=5000
+    DATABASE_URL=your_postgresql_connection_string
+    JWT_SECRET=your_secret_key
+    HARVARD_API_KEY=your_harvard_api_key
+    SMITHSONIAN_API_KEY=your_smithsonian_api_key
 
 Set up the database Make sure PostgreSQL is running. If needed, create a database manually.
 
 Then, run seed initial data:
 
-  npm run seed
+    npm run seed
 
 Running the Server
 
 To start the backend server locally, use:
 
-  npm run dev
+    npm run dev
 
 It will start the server in development mode with live reloading.
 
 For a production build, use:
 
-  npm run build
-  npm start
+    npm run build
+    npm start
 
 **API Endpoints**
 Method	Endpoint	Description
@@ -78,4 +78,4 @@ Jest is used for testing.
 
 To run the tests:
 
-  npm run test
+    npm run test
