@@ -2,7 +2,8 @@
 
 This is the backend for the Museum Curator project, providing API endpoints to fetch and process exhibits from external sources like Harvard Art Museums and Smithsonian. It also includes authentication and user collection management.
 
-Frontend Repository: Museum Curator Frontend
+Frontend Repository: [Museum Curator Frontend](https://github.com/ChannersSoh/museum-curator-project)
+
 Live API Base URL: https://museum-curator-backend.onrender.com
 
 **Features**
@@ -63,17 +64,17 @@ For a production build, use:
 
 **API Endpoints**
 
-GET	/api/exhibits	Fetch paginated exhibit list
+GET,	/api/exhibits,	Fetch paginated exhibit list
 
-GET	/api/exhibits/:id	Fetch exhibit details by ID
+GET,	/api/exhibits/:id,	Fetch exhibit details by ID
 
-POST	/register	Register a new user
+POST,	/register,	Register a new user
 
-POST	/login	Authenticate user, return JWT
+POST,	/login,	Authenticate user, return JWT
 
-POST	/collections	Create a new collection (Auth)
+POST,	/collections,	Create a new collection (Auth)
 
-POST	/collections/save	Save an exhibit to a collection
+POST,	/collections/save,	Save an exhibit to a collection
 
 Full API documentation will be added soon
 
