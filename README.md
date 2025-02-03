@@ -62,12 +62,17 @@ For a production build, use:
     npm start
 
 **API Endpoints**
-Method	Endpoint	Description
+
 GET	/api/exhibits	Fetch paginated exhibit list
+
 GET	/api/exhibits/:id	Fetch exhibit details by ID
+
 POST	/register	Register a new user
+
 POST	/login	Authenticate user, return JWT
+
 POST	/collections	Create a new collection (Auth)
+
 POST	/collections/save	Save an exhibit to a collection
 
 Full API documentation will be added soon
