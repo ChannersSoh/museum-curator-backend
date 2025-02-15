@@ -8,13 +8,9 @@ export const getExhibits = async (req: Request, res: Response) => {
     const desiredPageSize = parseInt(req.query.pageSize as string) || 20;
 
     const filters = {
-      institution: req.query.institution as string | undefined,
-      startYear: parseInt(req.query.startYear as string) || undefined,
-      endYear: parseInt(req.query.endYear as string) || undefined,
       collection: req.query.collection as string | undefined,
       country: req.query.country as string | undefined,
       medium: req.query.medium as string | undefined,
-      style: req.query.style as string | undefined,
     };
 
     const finalExhibits = await getExhibitsWithFilters(query, page, desiredPageSize, filters);
