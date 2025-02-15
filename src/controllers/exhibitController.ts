@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getExhibitsWithImages } from "../utils/getExhibitsWithImages";
+import { getExhibitsWithFilters } from "../utils/getExhibitsWithFilters";
 
 export const getExhibits = async (req: Request, res: Response) => {
   try {
@@ -7,7 +7,13 @@ export const getExhibits = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const desiredPageSize = parseInt(req.query.pageSize as string) || 20;
 
-    const finalExhibits = await getExhibitsWithImages(query, page, desiredPageSize);
+    const filters = {
+      collection: req.query.collection as string | undefined,
+      country: req.query.country as string | undefined,
+      medium: req.query.medium as string | undefined,
+    };
+
+    const finalExhibits = await getExhibitsWithFilters(query, page, desiredPageSize, filters);
 
     res.json({
       page,
