@@ -9,7 +9,7 @@ export const getHarvardObjects = async (
   pageSize: number = 20,
   filters: {
     collection?: string;
-    country?: string;
+    culture?: string;
     medium?: string;
   } = {}
 ): Promise<Exhibit[]> => {
@@ -29,7 +29,7 @@ export const getHarvardObjects = async (
       size: pageSize * 2,
       page,
       classification: filters.collection || undefined, 
-      culture: filters.country || undefined,
+      culture: filters.culture || undefined,
       medium: filters.medium || undefined,
       hasimage: 1,
     };
@@ -49,7 +49,7 @@ export const getHarvardObjects = async (
         imageUrl: item.primaryimageurl || "", 
         institution: "Harvard Art Museums",
         collection: item.classification || "Unknown",
-        countryOfOrigin: item.culture || "Unknown",
+        culture: item.culture || "Unknown",
         medium: item.medium || "Unknown",
         styleOrPeriod: item.period || "Unknown",
         locationCreated: item.place || "Unknown",
@@ -72,7 +72,7 @@ export const getSmithsonianData = async (
   pageSize: number = 20,
   filters: {
     collection?: string;
-    country?: string;
+    culture?: string;
     medium?: string;
   } = {}
 ): Promise<Exhibit[]> => {
@@ -89,7 +89,7 @@ export const getSmithsonianData = async (
 
     let filterQuery = query || "*";
     if (filters.collection) filterQuery += ` AND object_type:"${filters.collection}"`;
-    if (filters.country) filterQuery += ` AND geoLocation.content:"${filters.country}"`;
+    if (filters.culture) filterQuery += ` AND geoLocation.content:"${filters.culture}"`;
     if (filters.medium) filterQuery += ` AND indexedStructured.material:"${filters.medium}"`;
 
     const { data } = await axios.get("https://api.si.edu/openaccess/api/v1.0/search", {
@@ -116,7 +116,7 @@ export const getSmithsonianData = async (
         imageUrl: exhibit.content?.descriptiveNonRepeating?.online_media?.media?.[0]?.content || "",
         institution: "Smithsonian",
         collection: exhibit.content?.indexedStructured?.object_type?.[0] || "Unknown",
-        countryOfOrigin: exhibit.content?.indexedStructured?.geoLocation?.map((geo: any) => geo.content).join(", ") || "Unknown",
+        culture: exhibit.content?.indexedStructured?.geoLocation?.map((geo: any) => geo.content).join(", ") || "Unknown",
         medium: exhibit.content?.indexedStructured?.material?.join(", ") || "Unknown",
         styleOrPeriod: exhibit.content?.freetext?.style?.[0]?.content || "Unknown",
         locationCreated: exhibit.content?.freetext?.place?.map((place: any) => place.content).join(", ") || "Unknown",

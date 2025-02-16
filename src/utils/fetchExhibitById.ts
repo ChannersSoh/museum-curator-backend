@@ -39,7 +39,7 @@ export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
         imageUrl: record.primaryimageurl || "https://via.placeholder.com/150",
         institution: "Harvard Art Museums",
         collection: record.classification || "Unknown",
-        countryOfOrigin: record.culture || "Unknown",
+        culture: record.culture || "Unknown",
         medium: record.medium || "Unknown",
         styleOrPeriod: record.period || "Unknown",
         locationCreated: record.place || "Unknown",
@@ -71,7 +71,7 @@ export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
         imageUrl: exhibitData.content?.descriptiveNonRepeating?.online_media?.media?.[0]?.content || "https://via.placeholder.com/150",
         institution: "Smithsonian",
         collection: exhibitData.content?.indexedStructured?.object_type?.join(", ") || "Unknown",
-        countryOfOrigin: exhibitData.content?.geoLocation
+        culture: exhibitData.content?.geoLocation
           ? exhibitData.content.geoLocation.map((loc: Location) => loc.content).join(", ")
           : "Unknown",
         medium: exhibitData.content?.indexedStructured?.material?.join(", ") || "Unknown",

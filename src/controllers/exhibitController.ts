@@ -9,7 +9,7 @@ export const getExhibits = async (req: Request, res: Response) => {
 
     const filters = {
       collection: req.query.collection as string | undefined,
-      country: req.query.country as string | undefined,
+      culture: req.query.culture as string | undefined, 
       medium: req.query.medium as string | undefined,
     };
 
@@ -26,3 +26,4 @@ export const getExhibits = async (req: Request, res: Response) => {
     res.status(500).send("Error fetching art objects");
   }
 };
+

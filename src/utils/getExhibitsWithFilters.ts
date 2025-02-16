@@ -7,7 +7,7 @@ export const getExhibitsWithFilters = async (
   desiredCount: number,
   filters: {
     collection?: string;
-    country?: string;
+    culture?: string;
     medium?: string;
   } = {}
 ): Promise<Exhibit[]> => {
@@ -20,8 +20,6 @@ export const getExhibitsWithFilters = async (
     const remainingCount = desiredCount - exhibits.length;
     const fetchSizePerAPI = Math.ceil(remainingCount / 2);
 
-    console.log(`Fetching Harvard & Smithsonian: ${fetchSizePerAPI} each`);
-
     const [harvardResults, smithsonianResults] = await Promise.all([
       getHarvardObjects(query, currentPage, fetchSizePerAPI, filters),
       getSmithsonianData(query, currentPage, fetchSizePerAPI, filters),
@@ -29,8 +27,6 @@ export const getExhibitsWithFilters = async (
 
     let validHarvard = harvardResults.filter((exhibit) => exhibit.imageUrl && exhibit.imageUrl.trim() !== "");
     let validSmithsonian = smithsonianResults.filter((exhibit) => exhibit.imageUrl && exhibit.imageUrl.trim() !== "");
-
-    console.log(`Fetched Harvard: ${validHarvard.length}, Smithsonian: ${validSmithsonian.length}`);
 
     if (validHarvard.length === 0 && validSmithsonian.length === 0) {
       attemptsWithoutNewResults++;

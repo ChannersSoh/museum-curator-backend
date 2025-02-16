@@ -8,7 +8,7 @@ export interface Exhibit {
   imageUrl: string;
   institution: string;
   collection: string;
-  countryOfOrigin: string;
+  culture: string;
   medium: string;
   styleOrPeriod: string;
   locationCreated: string;
