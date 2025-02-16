@@ -15,30 +15,43 @@ export const getExhibitsWithFilters = async (
   let currentPage = startPage;
   let attemptsWithoutNewResults = 0;
   const maxAttempts = 5;
-  const fetchSize = Math.ceil(desiredCount * 1.5);
 
   while (exhibits.length < desiredCount && attemptsWithoutNewResults < maxAttempts) {
+    const remainingCount = desiredCount - exhibits.length;
+    const fetchSizePerAPI = Math.ceil(remainingCount / 2);
+
+    console.log(`Fetching Harvard & Smithsonian: ${fetchSizePerAPI} each`);
+
     const [harvardResults, smithsonianResults] = await Promise.all([
-      getHarvardObjects(query, currentPage, fetchSize, filters),
-      getSmithsonianData(query, currentPage, fetchSize, filters),
+      getHarvardObjects(query, currentPage, fetchSizePerAPI, filters),
+      getSmithsonianData(query, currentPage, fetchSizePerAPI, filters),
     ]);
 
-    let combinedResults = [...harvardResults, ...smithsonianResults];
+    let validHarvard = harvardResults.filter((exhibit) => exhibit.imageUrl && exhibit.imageUrl.trim() !== "");
+    let validSmithsonian = smithsonianResults.filter((exhibit) => exhibit.imageUrl && exhibit.imageUrl.trim() !== "");
 
-    combinedResults = combinedResults.filter((exhibit) => exhibit.imageUrl && exhibit.imageUrl.trim() !== "");
+    console.log(`Fetched Harvard: ${validHarvard.length}, Smithsonian: ${validSmithsonian.length}`);
 
-    if (combinedResults.length === 0) {
+    if (validHarvard.length === 0 && validSmithsonian.length === 0) {
       attemptsWithoutNewResults++;
-      console.log(`No new results found (${attemptsWithoutNewResults}/${maxAttempts}).`);
+
       if (attemptsWithoutNewResults >= maxAttempts) {
         console.log("Max attempts reached. Stopping search.");
         break;
       }
     } else {
-      attemptsWithoutNewResults = 0;
+      attemptsWithoutNewResults = 0; 
     }
 
-    exhibits = exhibits.concat(combinedResults);
+    let mixedResults: Exhibit[] = [];
+    let maxLength = Math.max(validHarvard.length, validSmithsonian.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (validHarvard[i]) mixedResults.push(validHarvard[i]);
+      if (validSmithsonian[i]) mixedResults.push(validSmithsonian[i]);
+    }
+
+    exhibits = exhibits.concat(mixedResults);
 
     if (exhibits.length >= desiredCount) {
       console.log("Reached desired count. Stopping search.");
@@ -48,5 +61,6 @@ export const getExhibitsWithFilters = async (
     currentPage++;
   }
 
+  console.log(`Final exhibits count: ${exhibits.length}`);
   return exhibits.slice(0, desiredCount);
 };
