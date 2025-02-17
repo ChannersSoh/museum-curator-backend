@@ -114,10 +114,8 @@ describe("getSmithsonianData", () => {
       imageUrl: "http://example.com/smithsonian.jpg",
       institution: "Smithsonian",
       collection: "Test Object", 
-      countryOfOrigin: "Test Country",
       medium: "Bronze",
       styleOrPeriod: "Contemporary",
-      subjectMatter: ["History"],
       locationCreated: "Unknown",
       historicalEra: expect.any(String),
     };

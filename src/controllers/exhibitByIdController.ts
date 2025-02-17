@@ -4,6 +4,7 @@ import { fetchExhibitById } from "../utils/fetchExhibitById";
 export const getExhibitById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
     if (!id) {
       res.status(400).json({ error: "Exhibit ID is required" });
       return;
@@ -11,9 +12,14 @@ export const getExhibitById = async (req: Request, res: Response): Promise<void>
 
     const exhibitData = await fetchExhibitById(id);
 
+    if (!exhibitData) {
+      res.status(404).json({ error: "Exhibit not found" }); // ✅ Properly return 404
+      return;
+    }
+
     res.json({ exhibit: exhibitData });
   } catch (error) {
-    const err = error as Error; 
-    res.status(500).json({ error: err.message });
+    console.error(`Error fetching exhibit ${req.params.id}:`, error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -2,9 +2,8 @@ import { Router } from "express";
 import { getExhibits } from "../controllers/exhibitController";
 import { getExhibitById } from "../controllers/exhibitByIdController";
 import { registerUser, loginUser } from "../controllers/authController";
-import { createCollection, saveExhibitToCollection } from "../controllers/collectionController";
+import { createCollection, saveExhibitToCollection, getUserCollections, getCollectionExhibits, removeExhibitFromCollection } from "../controllers/collectionController";
 import { authenticateUser } from "../middleware/authMiddleware";
-import { pool } from "../db/index";
 
 const router = Router();
 
@@ -13,24 +12,15 @@ router.get("/", (req, res) => {
 });
 
 router.get("/api/exhibits", getExhibits);
-
 router.get("/api/exhibits/:id", getExhibitById);
 
-router.get("/db-test", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.json({ time: result.rows[0] });
-  } catch (error) {
-    res.status(500).json({ error: "unable to connect to database" });
-  }
-});
-
 router.post("/register", registerUser);
-
 router.post("/login", loginUser);
 
 router.post("/collections", authenticateUser, createCollection);
-
 router.post("/collections/save", authenticateUser, saveExhibitToCollection);
+router.get("/collections", authenticateUser, getUserCollections);
+router.get("/collections/:id/exhibits", authenticateUser, getCollectionExhibits);
+router.delete("/collections/exhibits", authenticateUser, removeExhibitFromCollection);
 
 export default router;

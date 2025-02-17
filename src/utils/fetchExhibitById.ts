@@ -10,8 +10,11 @@ interface Location {
   content: string;
 }
 
-export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
-  if (!id) throw new Error("Exhibit ID is required.");
+export const fetchExhibitById = async (id: string): Promise<Exhibit | null> => {
+  if (!id) {
+    console.warn("Exhibit ID is required.");
+    return null;
+  }
 
   const [institution, ...idParts] = id.split("-");
   const actualId = idParts.join("-");
@@ -24,12 +27,13 @@ export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
       });
 
       if (!response.data.records || response.data.records.length === 0) {
-        throw new Error("No Harvard exhibit found.");
+        console.warn(`No Harvard exhibit found for ID: ${id}`);
+        return null; 
       }
 
       const record = response.data.records[0];
 
-      const exhibit: Exhibit = {
+      return {
         id: `harvard-${record.objectnumber}`,
         title: record.title || "Untitled",
         creator: record.people?.map((person: Person) => person.displayname).join(", ") || "Unknown",
@@ -45,21 +49,22 @@ export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
         locationCreated: record.place || "Unknown",
         historicalEra: determineHistoricalEra(record.dated || "Unknown"),
       };
+    } 
 
-      return exhibit;
-    } else if (institution === "smithsonian") {
+    if (institution === "smithsonian") {
       const apiKey = process.env.SMITHSONIAN_API_KEY;
       const response = await axios.get(`https://api.si.edu/openaccess/api/v1.0/content/${actualId}`, {
         params: { api_key: apiKey },
       });
 
       if (!response.data || !response.data.response) {
-        throw new Error("No Smithsonian exhibit found.");
+        console.warn(`No Smithsonian exhibit found for ID: ${id}`);
+        return null; 
       }
 
       const exhibitData = response.data.response;
 
-      const exhibit: Exhibit = {
+      return {
         id: `smithsonian-${exhibitData.id}`,
         title: exhibitData.title || "No Title Available",
         creator: exhibitData.content?.freetext?.name
@@ -83,13 +88,13 @@ export const fetchExhibitById = async (id: string): Promise<Exhibit> => {
           exhibitData.content?.freetext?.date?.[0]?.content || "Unknown"
         ),
       };
+    } 
 
-      return exhibit;
-    } else {
-      throw new Error("Invalid institution prefix.");
-    }
+    console.warn(`Invalid institution prefix: ${institution}`);
+    return null; 
+
   } catch (error) {
     console.error(`Error fetching exhibit ${id}:`, error);
-    throw error;
+    return null;
   }
 };

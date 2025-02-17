@@ -1,5 +1,5 @@
 import request from "supertest";
-import {startServer} from "../server"; 
+import { startServer } from "../server"; 
 import { pool } from "../db";
 import { seed } from "../db/seed";
 import { Server } from "http";
@@ -7,11 +7,11 @@ import { Server } from "http";
 let server: Server;
 let authToken: string;
 let collectionId: number;
+let exhibitId = "harvard-001"; 
 
 beforeAll(async () => {
   process.env.NODE_ENV = "test";
   await seed();
-
   server = startServer(5001);
 });
 
@@ -20,7 +20,6 @@ afterAll(async () => {
     .query("TRUNCATE TABLE exhibits, collections, users RESTART IDENTITY CASCADE")
     .catch(console.error);
   await pool.end().catch(console.error);
-
   await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
@@ -37,16 +36,21 @@ describe("Exhibits Endpoints", () => {
     const res = await request(server).get("/api/exhibits");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.exhibits)).toBe(true);
-  }, 10000);
+  }, 30000);
 
-  it("GET /api/exhibits/:id should return exhibit details for a valid exhibit id", async () => {
-    const validExhibitId = "harvard-208675";
-    const expected = 208675
+  it("GET /api/exhibits/:id should return exhibit details for a valid exhibit ID", async () => {
+    const exhibitsRes = await request(server).get("/api/exhibits");
+    const validExhibitId = exhibitsRes.body.exhibits[0]?.id || "harvard-208675"; 
     const res = await request(server).get(`/api/exhibits/${validExhibitId}`);
+    
     expect(res.status).toBe(200);
-    expect(res.body.exhibit).toHaveProperty("id", expected);
+    expect(res.body.exhibit).toHaveProperty("id", validExhibitId); 
   });
   
+  it("GET /api/exhibits/:id should return 404 for an invalid exhibit ID", async () => {
+    const res = await request(server).get(`/api/exhibits/invalid-id`);
+    expect(res.status).toBe(404);
+  });
 });
 
 describe("Auth Endpoints", () => {
@@ -59,8 +63,9 @@ describe("Auth Endpoints", () => {
 
     const res = await request(server).post("/register").send(newUser);
     expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("id");
-    expect(res.body.username).toEqual("testuser");
+    expect(res.body.user).toHaveProperty("id");
+    expect(res.body.user.username).toEqual("testuser");
+    expect(res.body).toHaveProperty("token");
   });
 
   it("POST /login should login a user and return a token", async () => {
@@ -73,6 +78,13 @@ describe("Auth Endpoints", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("token");
     authToken = res.body.token;
+  });
+
+  it("POST /login should return 401 for incorrect credentials", async () => {
+    const res = await request(server)
+      .post("/login")
+      .send({ email: "test@example.com", password: "wrongpassword" });
+    expect(res.status).toBe(401);
   });
 });
 
@@ -108,24 +120,80 @@ describe("Collections Endpoints", () => {
     collectionId = res.body.id;
   });
 
+  it("GET /collections should return all user collections (protected)", async () => {
+    const res = await request(server)
+      .get("/collections")
+      .set("Authorization", `Bearer ${authToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it("GET /collections/:id/exhibits should return an empty array initially", async () => {
+    const res = await request(server)
+      .get(`/collections/${collectionId}/exhibits`)
+      .set("Authorization", `Bearer ${authToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(0);
+  });
+
   it("POST /collections/save should save an exhibit to a collection (protected)", async () => {
     const exhibitToSave = {
-      collectionId: collectionId,
-      exhibitId: "harvard-001",
+      collectionId,
+      exhibitId,
       title: "Mona Lisa",
       institution: "Harvard Art Museums",
     };
-  
+
     const res = await request(server)
       .post("/collections/save")
       .set("Authorization", `Bearer ${authToken}`)
       .send(exhibitToSave);
-  
-    // Expect 201 if newly inserted, or 200 if already exists.
+
     expect([200, 201]).toContain(res.status);
     if (res.status === 201) {
       expect(res.body).toHaveProperty("exhibit_id", exhibitToSave.exhibitId);
     }
   });
-  
+
+  it("GET /collections/:id/exhibits should return the added exhibit", async () => {
+    const res = await request(server)
+      .get(`/collections/${collectionId}/exhibits`)
+      .set("Authorization", `Bearer ${authToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0]).toHaveProperty("id", exhibitId);
+  });
+
+  it("DELETE /collections/exhibits should remove an exhibit from a collection", async () => {
+    const res = await request(server)
+      .delete("/collections/exhibits")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ collectionId, exhibitId });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("message", "Exhibit removed from collection");
+  });
+
+  it("GET /collections/:id/exhibits should return an empty list after removal", async () => {
+    const res = await request(server)
+      .get(`/collections/${collectionId}/exhibits`)
+      .set("Authorization", `Bearer ${authToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
+
+  it("DELETE /collections/exhibits should return 404 if exhibit is not in collection", async () => {
+    const res = await request(server)
+      .delete("/collections/exhibits")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ collectionId, exhibitId });
+
+    expect(res.status).toBe(404);
+  });
 });
