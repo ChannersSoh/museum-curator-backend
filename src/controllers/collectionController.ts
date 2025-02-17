@@ -3,11 +3,11 @@ import { pool } from "../db";
 import { AuthenticatedRequest } from "../middleware/authMiddleware";
 import { CreateCollectionBody, SaveExhibitBody } from "../models/requests"; 
 
-export const createCollection = (
+export const createCollection = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -16,57 +16,17 @@ export const createCollection = (
   const { name, description } = req.body as CreateCollectionBody;
   const userId = req.user.id;
 
-  pool.query(
-    "INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING *",
-    [userId, name, description]
-  )
-    .then((result) => {
-      res.status(201).json(result.rows[0]);
-    })
-    .catch(next);
-};
-
-export const saveExhibitToCollection = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  const { collectionId, exhibitId, title, institution } = req.body as SaveExhibitBody;
-
-  if (!req.user) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-
   try {
-    const exhibitResult = await pool.query(
-      "SELECT * FROM exhibits WHERE id = $1",
-      [exhibitId]
+    const result = await pool.query(
+      "INSERT INTO collections (user_id, name, description) VALUES ($1, $2, $3) RETURNING *",
+      [userId, name, description]
     );
 
-    if (exhibitResult.rows.length === 0) {
-      await pool.query(
-        "INSERT INTO exhibits (id, title, institution, user_id) VALUES ($1, $2, $3, $4)",
-        [exhibitId, title, institution, req.user.id]
-      );
-    }
+    const collection = { ...result.rows[0], exhibitCount: 0 };
 
-    const query = `
-      INSERT INTO collection_exhibits (collection_id, exhibit_id)
-      VALUES ($1, $2)
-      ON CONFLICT (collection_id, exhibit_id) DO NOTHING
-      RETURNING *;
-    `;
-    const joinResult = await pool.query(query, [collectionId, exhibitId]);
-
-    if (joinResult.rows.length === 0) {
-      res.status(200).json({ message: "Exhibit already in collection" });
-      return;
-    }
-
-    res.status(201).json(joinResult.rows[0]);
+    res.status(201).json(collection);
   } catch (error) {
-    console.error("Error saving exhibit:", error);
+    console.error("Error creating collection:", error);
     next(error);
   }
 };
@@ -79,7 +39,10 @@ export const getUserCollections = async (req: AuthenticatedRequest, res: Respons
 
   try {
     const result = await pool.query(
-      "SELECT * FROM collections WHERE user_id = $1",
+      `SELECT c.*, 
+              (SELECT COUNT(*) FROM collection_exhibits ce WHERE ce.collection_id = c.id) AS "exhibitCount"
+       FROM collections c
+       WHERE c.user_id = $1`,
       [req.user.id]
     );
 
@@ -90,7 +53,89 @@ export const getUserCollections = async (req: AuthenticatedRequest, res: Respons
   }
 };
 
-export const getCollectionExhibits = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+
+export const saveExhibitToCollection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const {
+    collectionId, exhibitId, title, institution, imageUrl, creator,
+    date, collection, culture, medium, styleOrPeriod, locationCreated, description
+  } = req.body as SaveExhibitBody;
+
+  if (!req.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const exhibitResult = await pool.query("SELECT * FROM exhibits WHERE id = $1", [exhibitId]);
+
+    let exhibit = exhibitResult.rows.length > 0 ? exhibitResult.rows[0] : null;
+
+    if (!exhibit) {
+      exhibit = {
+        id: exhibitId,
+        title: title || "Untitled",
+        institution: institution || "Unknown Institution",
+        imageUrl: imageUrl || "https://via.placeholder.com/150",
+        creator: creator || "Unknown",
+        date: date || "Unknown",
+        collection: collection || "Unknown",
+        culture: culture || "Unknown",
+        medium: medium || "Unknown",
+        styleOrPeriod: styleOrPeriod || "Unknown",
+        locationCreated: locationCreated || "Unknown",
+        description: description || "No description available",
+      };
+
+      await pool.query(
+        `INSERT INTO exhibits (id, title, institution, image_url, creator, date, collection, culture, medium, style_or_period, location_created, description, user_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          exhibit.id,
+          exhibit.title,
+          exhibit.institution,
+          exhibit.imageUrl,
+          exhibit.creator,
+          exhibit.date,
+          exhibit.collection,
+          exhibit.culture,
+          exhibit.medium,
+          exhibit.styleOrPeriod,
+          exhibit.locationCreated,
+          exhibit.description,
+          req.user.id,
+        ]
+      );
+    }
+
+    const insertResult = await pool.query(
+      `INSERT INTO collection_exhibits (collection_id, exhibit_id)
+       VALUES ($1, $2)
+       ON CONFLICT (collection_id, exhibit_id) DO NOTHING
+       RETURNING *`,
+      [collectionId, exhibitId]
+    );
+
+    if (insertResult.rowCount === 0) {
+      res.status(200).json({ message: "Exhibit already in collection" });
+      return;
+    }
+
+    res.status(201).json({ message: "Exhibit added to collection", exhibit });
+  } catch (error) {
+    console.error("Error saving exhibit to collection:", error);
+    next(error);
+  }
+};
+
+export const getCollectionExhibits = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -100,7 +145,10 @@ export const getCollectionExhibits = async (req: AuthenticatedRequest, res: Resp
 
   try {
     const collectionResult = await pool.query(
-      "SELECT * FROM collections WHERE id = $1 AND user_id = $2",
+      `SELECT c.*, 
+              (SELECT COUNT(*) FROM collection_exhibits ce WHERE ce.collection_id = c.id) AS "exhibitCount"
+       FROM collections c
+       WHERE c.id = $1 AND c.user_id = $2`,
       [collectionId, req.user.id]
     );
 
@@ -110,14 +158,20 @@ export const getCollectionExhibits = async (req: AuthenticatedRequest, res: Resp
     }
 
     const exhibitsResult = await pool.query(
-      `SELECT e.id, e.title, e.institution, e.image_url AS "imageUrl", e.creator, e.date, e.collection, e.culture, e.medium, e.style_or_period AS "styleOrPeriod", e.location_created AS "locationCreated", e.description
+      `SELECT e.id, e.title, e.institution, 
+              e.image_url AS "imageUrl", e.creator, e.date, 
+              e.collection, e.culture, e.medium, 
+              e.style_or_period AS "styleOrPeriod", e.location_created AS "locationCreated", e.description
        FROM exhibits e
        JOIN collection_exhibits ce ON e.id = ce.exhibit_id
        WHERE ce.collection_id = $1`,
       [collectionId]
     );
 
-    res.status(200).json(exhibitsResult.rows);
+    res.status(200).json({
+      collection: collectionResult.rows[0],
+      exhibits: exhibitsResult.rows,
+    });
   } catch (error) {
     console.error("Error fetching exhibits:", error);
     next(error);
@@ -142,6 +196,15 @@ export const removeExhibitFromCollection = async (req: AuthenticatedRequest, res
     if (deleteResult.rowCount === 0) {
       res.status(404).json({ error: "Exhibit not found in collection" });
       return;
+    }
+
+    const countResult = await pool.query(
+      "SELECT COUNT(*) FROM collection_exhibits WHERE exhibit_id = $1",
+      [exhibitId]
+    );
+
+    if (parseInt(countResult.rows[0].count) === 0) {
+      await pool.query("DELETE FROM exhibits WHERE id = $1", [exhibitId]);
     }
 
     res.status(200).json({ message: "Exhibit removed from collection" });
