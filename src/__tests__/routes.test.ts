@@ -133,41 +133,45 @@ describe("Collections Endpoints", () => {
     const res = await request(server)
       .get(`/collections/${collectionId}/exhibits`)
       .set("Authorization", `Bearer ${authToken}`);
-
+  
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(0);
+    expect(Array.isArray(res.body.exhibits)).toBe(true); 
+    expect(res.body.exhibits.length).toBe(0);
   });
+  
 
-  it("POST /collections/save should save an exhibit to a collection (protected)", async () => {
+  it("POST /collections/save should save an exhibit to a collection", async () => {
     const exhibitToSave = {
       collectionId,
       exhibitId,
       title: "Mona Lisa",
       institution: "Harvard Art Museums",
     };
-
+  
     const res = await request(server)
       .post("/collections/save")
       .set("Authorization", `Bearer ${authToken}`)
       .send(exhibitToSave);
-
+  
     expect([200, 201]).toContain(res.status);
+  
     if (res.status === 201) {
-      expect(res.body).toHaveProperty("exhibit_id", exhibitToSave.exhibitId);
+      expect(res.body).toHaveProperty("exhibit.id", exhibitToSave.exhibitId);
     }
   });
+  
 
   it("GET /collections/:id/exhibits should return the added exhibit", async () => {
     const res = await request(server)
       .get(`/collections/${collectionId}/exhibits`)
       .set("Authorization", `Bearer ${authToken}`);
-
+  
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0]).toHaveProperty("id", exhibitId);
+    expect(Array.isArray(res.body.exhibits)).toBe(true);
+    expect(res.body.exhibits.length).toBe(1);
+    expect(res.body.exhibits[0]).toHaveProperty("id", exhibitId);
   });
+  
 
   it("DELETE /collections/exhibits should remove an exhibit from a collection", async () => {
     const res = await request(server)
@@ -183,10 +187,12 @@ describe("Collections Endpoints", () => {
     const res = await request(server)
       .get(`/collections/${collectionId}/exhibits`)
       .set("Authorization", `Bearer ${authToken}`);
-
+  
     expect(res.status).toBe(200);
-    expect(res.body.length).toBe(0);
+    expect(Array.isArray(res.body.exhibits)).toBe(true);
+    expect(res.body.exhibits.length).toBe(0);
   });
+  
 
   it("DELETE /collections/exhibits should return 404 if exhibit is not in collection", async () => {
     const res = await request(server)

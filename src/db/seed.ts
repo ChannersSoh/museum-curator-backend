@@ -33,10 +33,20 @@ export const seed = async (): Promise<void> => {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         institution TEXT NOT NULL,
+        image_url TEXT,
+        creator TEXT,
+        date TEXT,
+        collection TEXT,
+        culture TEXT,
+        medium TEXT,
+        style_or_period TEXT,
+        location_created TEXT,
+        description TEXT,
         user_id INT REFERENCES users(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
 
     await pool.query(`
       CREATE TABLE collection_exhibits (
@@ -71,11 +81,12 @@ export const seed = async (): Promise<void> => {
     console.log("Collections seeded:", collectionsResult.rows);
 
     const exhibitsData = [
-      ["harvard-001", "Mona Lisa", "Harvard Art Museums", usersResult.rows[0].id],
-      ["smithsonian-001", "The Starry Night", "Smithsonian", usersResult.rows[0].id],
+      ["harvard-001", "Mona Lisa", "Harvard Art Museums", "https://example.com/mona-lisa.jpg", "Leonardo da Vinci", "1503", "Paintings", "Italian", "Oil on Canvas", "Renaissance", "Florence", "A famous portrait painting", usersResult.rows[0].id],
+      ["smithsonian-001", "The Starry Night", "Smithsonian", "https://example.com/starry-night.jpg", "Vincent van Gogh", "1889", "Paintings", "Dutch", "Oil on Canvas", "Post-Impressionism", "France", "A depiction of Van Gogh's night view", usersResult.rows[0].id],
     ];
     const insertExhibitsQuery = format(
-      "INSERT INTO exhibits (id, title, institution, user_id) VALUES %L RETURNING *;",
+      `INSERT INTO exhibits (id, title, institution, image_url, creator, date, collection, culture, medium, style_or_period, location_created, description, user_id) 
+       VALUES %L RETURNING *;`,
       exhibitsData
     );
     const exhibitsResult = await pool.query(insertExhibitsQuery);

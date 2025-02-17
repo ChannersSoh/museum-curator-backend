@@ -31,7 +31,11 @@ export const createCollection = async (
   }
 };
 
-export const getUserCollections = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getUserCollections = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -39,10 +43,13 @@ export const getUserCollections = async (req: AuthenticatedRequest, res: Respons
 
   try {
     const result = await pool.query(
-      `SELECT c.*, 
-              (SELECT COUNT(*) FROM collection_exhibits ce WHERE ce.collection_id = c.id) AS "exhibitCount"
+      `SELECT c.id, c.name, c.description, 
+              COUNT(ce.exhibit_id) AS "exhibitCount"
        FROM collections c
-       WHERE c.user_id = $1`,
+       LEFT JOIN collection_exhibits ce ON c.id = ce.collection_id
+       WHERE c.user_id = $1
+       GROUP BY c.id
+       ORDER BY c.id`,
       [req.user.id]
     );
 
@@ -52,6 +59,7 @@ export const getUserCollections = async (req: AuthenticatedRequest, res: Respons
     next(error);
   }
 };
+
 
 
 export const saveExhibitToCollection = async (
