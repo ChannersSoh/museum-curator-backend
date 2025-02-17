@@ -110,9 +110,10 @@ export const getCollectionExhibits = async (req: AuthenticatedRequest, res: Resp
     }
 
     const exhibitsResult = await pool.query(
-      `SELECT e.* FROM exhibits e
-      JOIN collection_exhibits ce ON e.id = ce.exhibit_id
-      WHERE ce.collection_id = $1`,
+      `SELECT e.id, e.title, e.institution, e.image_url AS "imageUrl", e.creator, e.date, e.collection, e.culture, e.medium, e.style_or_period AS "styleOrPeriod", e.location_created AS "locationCreated", e.description
+       FROM exhibits e
+       JOIN collection_exhibits ce ON e.id = ce.exhibit_id
+       WHERE ce.collection_id = $1`,
       [collectionId]
     );
 
@@ -122,6 +123,7 @@ export const getCollectionExhibits = async (req: AuthenticatedRequest, res: Resp
     next(error);
   }
 };
+
 
 export const removeExhibitFromCollection = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   const { collectionId, exhibitId } = req.body;
