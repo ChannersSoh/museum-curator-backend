@@ -87,16 +87,17 @@ export const saveExhibitToCollection = async (
         id: exhibitId,
         title: title || "Untitled",
         institution: institution || "Unknown Institution",
-        imageUrl: imageUrl || "https://via.placeholder.com/150",
+        image_url: imageUrl,
         creator: creator || "Unknown",
         date: date || "Unknown",
         collection: collection || "Unknown",
         culture: culture || "Unknown",
         medium: medium || "Unknown",
-        styleOrPeriod: styleOrPeriod || "Unknown",
-        locationCreated: locationCreated || "Unknown",
+        style_or_period: styleOrPeriod || "Unknown",
+        location_created: locationCreated || "Unknown",           
         description: description || "No description available",
       };
+      
 
       await pool.query(
         `INSERT INTO exhibits (id, title, institution, image_url, creator, date, collection, culture, medium, style_or_period, location_created, description, user_id)
