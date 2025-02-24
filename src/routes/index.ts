@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getExhibits } from "../controllers/exhibitController";
 import { getExhibitById } from "../controllers/exhibitByIdController";
 import { registerUser, loginUser } from "../controllers/authController";
-import { createCollection, saveExhibitToCollection, getUserCollections, getCollectionExhibits, removeExhibitFromCollection } from "../controllers/collectionController";
+import { createCollection, saveExhibitToCollection, getUserCollections, getCollectionExhibits, removeExhibitFromCollection, deleteCollection } from "../controllers/collectionController";
 import { authenticateUser } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -22,5 +22,7 @@ router.post("/collections/save", authenticateUser, saveExhibitToCollection);
 router.get("/collections", authenticateUser, getUserCollections);
 router.get("/collections/:id/exhibits", authenticateUser, getCollectionExhibits);
 router.delete("/collections/exhibits", authenticateUser, removeExhibitFromCollection);
+router.delete("/collections/:id", authenticateUser, deleteCollection);
+
 
 export default router;

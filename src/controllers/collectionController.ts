@@ -222,3 +222,39 @@ export const removeExhibitFromCollection = async (req: AuthenticatedRequest, res
     next(error);
   }
 };
+
+export const deleteCollection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const collectionId = parseInt(req.params.id);
+
+  try {
+    // Optionally, delete any associated rows in collection_exhibits.
+    await pool.query(
+      "DELETE FROM collection_exhibits WHERE collection_id = $1",
+      [collectionId]
+    );
+
+    const result = await pool.query(
+      "DELETE FROM collections WHERE id = $1 AND user_id = $2 RETURNING *",
+      [collectionId, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "Collection not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Collection deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting collection:", error);
+    next(error);
+  }
+};
