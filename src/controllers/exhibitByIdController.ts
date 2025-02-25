@@ -13,7 +13,7 @@ export const getExhibitById = async (req: Request, res: Response): Promise<void>
     const exhibitData = await fetchExhibitById(id);
 
     if (!exhibitData) {
-      res.status(404).json({ error: "Exhibit not found" }); // ✅ Properly return 404
+      res.status(404).json({ error: "Exhibit not found" }); 
       return;
     }
 

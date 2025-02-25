@@ -236,7 +236,6 @@ export const deleteCollection = async (
   const collectionId = parseInt(req.params.id);
 
   try {
-    // Optionally, delete any associated rows in collection_exhibits.
     await pool.query(
       "DELETE FROM collection_exhibits WHERE collection_id = $1",
       [collectionId]
