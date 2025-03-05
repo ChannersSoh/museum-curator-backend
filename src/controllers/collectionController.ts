@@ -189,8 +189,8 @@ export const getCollectionExhibits = async (
 
 
 export const removeExhibitFromCollection = async (
-  req: AuthenticatedRequest, 
-  res: Response, 
+  req: AuthenticatedRequest,
+  res: Response,
   next: NextFunction
 ): Promise<void> => {
   const { collectionId, exhibitId } = req.body;
@@ -207,7 +207,7 @@ export const removeExhibitFromCollection = async (
     );
 
     if (deleteResult.rowCount === 0) {
-      res.status(200).json({ message: "Exhibit already removed or not present in collection" });
+      res.status(404).json({ error: "Exhibit not found in collection" });
       return;
     }
 
@@ -226,6 +226,7 @@ export const removeExhibitFromCollection = async (
     next(error);
   }
 };
+
 
 export const deleteCollection = async (
   req: AuthenticatedRequest,
