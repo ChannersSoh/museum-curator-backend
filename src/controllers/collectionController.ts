@@ -188,7 +188,11 @@ export const getCollectionExhibits = async (
 };
 
 
-export const removeExhibitFromCollection = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const removeExhibitFromCollection = async (
+  req: AuthenticatedRequest, 
+  res: Response, 
+  next: NextFunction
+): Promise<void> => {
   const { collectionId, exhibitId } = req.body;
 
   if (!req.user) {
@@ -203,7 +207,7 @@ export const removeExhibitFromCollection = async (req: AuthenticatedRequest, res
     );
 
     if (deleteResult.rowCount === 0) {
-      res.status(404).json({ error: "Exhibit not found in collection" });
+      res.status(200).json({ message: "Exhibit already removed or not present in collection" });
       return;
     }
 
